@@ -1,72 +1,76 @@
 <?php
 
-
 namespace App\Controller;
-
-
+use Doctrine\Persistence\ManagerRegistry;
+use App\Entity\Contacto;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-
 final class PageController extends AbstractController
 {
-   private $contactos = [
-       1 => ["nombre" => "Juan Pérez", "telefono" => "524142432", "email" => "juanp@ieselcaminas.org"],
-       2 => ["nombre" => "Ana López", "telefono" => "58958448", "email" => "anita@ieselcaminas.org"],
-       5 => ["nombre" => "Mario Montero", "telefono" => "5326824", "email" => "mario.mont@ieselcaminas.org"],
-       7 => ["nombre" => "Laura Martínez", "telefono" => "42898966", "email" => "lm2000@ieselcaminas.org"],
-       9 => ["nombre" => "Nora Jover", "telefono" => "54565859", "email" => "norajover@ieselcaminas.org"]
-   ];
+    private $contactos = [
+        1 => ["nombre" => "Juan Pérez", "telefono" => "524142432", "email" => "juanp@ieselcaminas.org"],
+        2 => ["nombre" => "Ana López", "telefono" => "58958448", "email" => "anita@ieselcaminas.org"],
+        5 => ["nombre" => "Mario Montero", "telefono" => "5326824", "email" => "mario.mont@ieselcaminas.org"],
+        7 => ["nombre" => "Laura Martínez", "telefono" => "42898966", "email" => "lm2000@ieselcaminas.org"],
+        9 => ["nombre" => "Nora Jover", "telefono" => "54565859", "email" => "norajover@ieselcaminas.org"]
+    ];
 
+    #[Route('/page', name: 'app_page')]
+    public function index(): JsonResponse
+    {
+        return $this->json([
+            'message' => 'Welcome to your new controller!',
+            'path' => 'src/Controller/PageController.php',
+        ]);
+    }
 
-   #[Route('/page', name: 'app_page')]
-   public function index(): JsonResponse
-   {
-       return $this->json([
-           'message' => 'Welcome to your new controller!',
-           'path' => 'src/Controller/PageController.php',
-       ]);
-   }
+    #[Route('/', name: 'inicio')]
+    public function inicio(): Response
+    {
+        return $this->render('inicio.html.twig');
+    }
 
+        #[Route("/contacto/insertar", name: "insertar_contacto")]
+    
+    public function insertar(ManagerRegistry $doctrine)
+    
+    {
+    $entityManager = $doctrine->getManager();
+    foreach ($this->contactos as $c) {
+        $contacto = new Contacto();
+        $contacto->setNombre($c["nombre"]);
+        $contacto->setTelefono($c["telefono"]);
+        $contacto->setEmail($c["email"]);
+        $entityManager->persist($contacto);
+    }
 
-   #[Route('/', name: 'inicio')]
-   public function inicio(): Response
-   {
-       return $this->render('inicio.html.twig');
-   }
-   
+    try {
+        // Sólo se necesita realizar flush una vez y confirmará todas las operaciones pendientes
+        $entityManager->flush();
+        return new Response("Contactos insertados");
+    } catch (\Exception $e) {
+        return new Response("Error insertando objetos");
+    }
 
-
-   #[Route('/contacto/{codigo}', name: 'ficha_contacto')]
-   public function ficha($codigo): Response
-   {
-       $contacto = $this->contactos[$codigo] ?? null;
-
-       if ($contacto){
-        return $this->render('ficha_contacto.html.twig', ["contacto" => $contacto]);
-       }
-       return new Response("<html><body>$codigo</body></html>");
-
-
-       /*
-       $resultado = $this->contactos[$codigo] ?? null;
-       
-       if ($resultado) {
-           $html = "<ul>";
-           $html .= "<li>" . htmlspecialchars($codigo) . "</li>";
-           $html .= "<li>" . htmlspecialchars($resultado['nombre']) . "</li>";
-           $html .= "<li>" . htmlspecialchars($resultado['telefono']) . "</li>";
-           $html .= "<li>" . htmlspecialchars($resultado['email']) . "</li>";
-           $html .= "</ul>"; 
-
-
-           return new Response("<html><body>$html</body></html>");
-       }
-        */
-
-
-       return new Response("<html><body>Contacto $codigo no encontrado</body></html>"); 
-   }
 }
+    
+
+    #[Route('/contacto/{codigo}', name: 'ficha_contacto')]
+    public function ficha($codigo): Response
+    {
+        
+        $contacto = ($this->contactos[$codigo] ?? null);
+
+        if ($contacto){
+            return $this->render('ficha_contacto.html.twig', ["contacto" => $contacto]);
+        }
+
+        return new Response("<html><body>Contacto $codigo no encontrado</body></html>"); // Added closing tags
+    }
+    
+}
+
+
