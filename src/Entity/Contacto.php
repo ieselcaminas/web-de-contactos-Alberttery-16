@@ -1,10 +1,9 @@
 <?php
-
 namespace App\Entity;
 
 use App\Repository\ContactoRepository;
 use Doctrine\ORM\Mapping as ORM;
-
+use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: ContactoRepository::class)]
 class Contacto
 {
@@ -14,13 +13,20 @@ class Contacto
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $Nombre = null;
+    #[Assert\NotBlank]
+    private ?string $nombre = null;
+
+    #[ORM\Column(length: 15)]
+    #[Assert\NotBlank]
+    private ?string $telefono = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $Telefono = null;
+    #[Assert\Email(message:"El email {{ value }} no es válido")]
+    private $email;
 
-    #[ORM\Column(length: 255)]
-    private ?string $Email = null;
+    #[ORM\ManyToOne(inversedBy: 'contactos')]
+    #[Assert\NotBlank]
+    private ?Provincia $provincia = null;
 
     public function getId(): ?int
     {
@@ -29,36 +35,49 @@ class Contacto
 
     public function getNombre(): ?string
     {
-        return $this->Nombre;
+        return $this->nombre;
     }
 
-    public function setNombre(string $Nombre): static
+    public function setNombre(?string $nombre): self
     {
-        $this->Nombre = $Nombre;
+        $this->nombre = $nombre;
 
         return $this;
     }
 
     public function getTelefono(): ?string
     {
-        return $this->Telefono;
+
+        return $this->telefono;
     }
 
-    public function setTelefono(string $Telefono): static
+    public function setTelefono(?string $telefono): self
     {
-        $this->Telefono = $Telefono;
+        $this->telefono = $telefono;
 
         return $this;
     }
 
     public function getEmail(): ?string
     {
-        return $this->Email;
+        return $this->email;
     }
 
-    public function setEmail(string $Email): static
+    public function setEmail(?string $email): self
     {
-        $this->Email = $Email;
+        $this->email = $email;
+
+        return $this;
+    }
+
+    public function getProvincia(): ?Provincia
+    {
+        return $this->provincia;
+    }
+
+    public function setProvincia(?Provincia $provincia): self
+    {
+        $this->provincia = $provincia;
 
         return $this;
     }
