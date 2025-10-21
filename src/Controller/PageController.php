@@ -30,7 +30,7 @@ final class PageController extends AbstractController
         ]);
     }
 
-    #[Route('/', name: 'inicio')]
+    #[Route('/contacto', name: 'inicio')]
     public function inicio(): Response
     {
         return $this->render('inicio.html.twig');
@@ -140,7 +140,7 @@ final class PageController extends AbstractController
             $entityManager = $doctrine->getManager();
             $entityManager->persist($contacto);
             $entityManager->flush();
-            return $this->redirectToRoute('ficha_contacto', ["codigo" => $contacto->getId()]);
+            return $this->redirectToRoute('ficha_contacto', ['codigo' => $contacto->getId()]);
         }
         return $this->render('nuevo.html.twig', array(
             'formulario' => $formulario->createView()
