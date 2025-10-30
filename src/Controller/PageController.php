@@ -4,7 +4,6 @@ namespace App\Controller;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Entity\Contacto;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Provincia;
@@ -13,6 +12,24 @@ use Symfony\Component\HttpFoundation\Request;
 
 final class PageController extends AbstractController
 {
+    #[Route('/', name: 'inicio')]
+    public function inicio(ManagerRegistry $doctrine): Response
+{
+    // Comprobamos si el usuario está logeado
+    if (!$this->getUser()) {
+        return $this->redirectToRoute('login'); // o a /index si esa es tu ruta de login
+    }
+
+    // Obtenemos todos los contactos
+    $contactos = $doctrine->getRepository(Contacto::class)->findAll();
+
+    // Mostramos la plantilla con la lista
+    return $this->render('inicio.html.twig', [
+        'contactos' => $contactos,
+    ]);
+}
+
+/*
     private $contactos = [
         1 => ["nombre" => "Juan Pérez", "telefono" => "524142432", "email" => "juanp@ieselcaminas.org"],
         2 => ["nombre" => "Ana López", "telefono" => "58958448", "email" => "anita@ieselcaminas.org"],
@@ -21,20 +38,6 @@ final class PageController extends AbstractController
         9 => ["nombre" => "Nora Jover", "telefono" => "54565859", "email" => "norajover@ieselcaminas.org"]
     ];
 
-    #[Route('/page', name: 'app_page')]
-    public function index(): JsonResponse
-    {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/PageController.php',
-        ]);
-    }
-
-    #[Route('/contacto', name: 'inicio')]
-    public function inicio(): Response
-    {
-        return $this->render('inicio.html.twig');
-    }
 
     #[Route("/contacto/insertar", name: "insertar_contacto")]
     
@@ -56,10 +59,9 @@ final class PageController extends AbstractController
         return new Response("Contactos insertados");
     } catch (\Exception $e) {
         return new Response("Error insertando objetos");
+        }
     }
 
-}
-/*
     #[Route('/contacto/{codigo}', name: 'ficha_contacto')]
     public function ficha($codigo): Response
     {
@@ -89,6 +91,28 @@ final class PageController extends AbstractController
         $contacto->setProvincia($provincia);
 
         $entityManager->persist($provincia);
+        $entityManager->persist($contacto);
+
+        $entityManager->flush();
+        return $this->render('ficha_contacto.html.twig', [
+            'contacto' => $contacto
+        ]);
+    }
+
+
+    #[Route("/contacto/insertarSinProvincia", name:'insertar_sin_provincia_contacto')]
+    
+    public function insertarSinProvincia(ManagerRegistry $doctrine): Response{
+        $entityManager = $doctrine->getManager();
+        $provincia = $doctrine->getRepository(Provincia::class)->find(2);
+
+        $contacto = new Contacto();
+
+        $contacto->setNombre("Inserción de prueba sin provincia");
+        $contacto->setTelefono("900220022");
+        $contacto->setEmail("insercion.de.prueba.sin.provincia@contacto.es");
+        $contacto->setProvincia($provincia);
+
         $entityManager->persist($contacto);
 
         $entityManager->flush();
@@ -147,27 +171,6 @@ final class PageController extends AbstractController
         ));
     }
 
-    #[Route("/contacto/insertarSinProvincia", name:'insertar_sin_provincia_contacto')]
-    
-    public function insertarSinProvincia(ManagerRegistry $doctrine): Response{
-        $entityManager = $doctrine->getManager();
-        $provincia = $doctrine->getRepository(Provincia::class)->find(2);
-
-        $contacto = new Contacto();
-
-        $contacto->setNombre("Inserción de prueba sin provincia");
-        $contacto->setTelefono("900220022");
-        $contacto->setEmail("insercion.de.prueba.sin.provincia@contacto.es");
-        $contacto->setProvincia($provincia);
-
-        $entityManager->persist($contacto);
-
-        $entityManager->flush();
-        return $this->render('ficha_contacto.html.twig', [
-            'contacto' => $contacto
-        ]);
-    }
-
     #[Route('/contacto/{codigo}', name: 'ficha_contacto')]
 
     public function ficha (ManagerRegistry $doctrine, $codigo): Response{
@@ -212,7 +215,7 @@ final class PageController extends AbstractController
             {
                 $entityManager->remove($contacto);
                 $entityManager->flush();
-                return new Response("Contacto eliminado");
+                return $this->redirectToRoute('inicio');
             } catch (\Exception $e) {
                 return new Response("Error eliminado objeto");
             }
@@ -221,10 +224,6 @@ final class PageController extends AbstractController
                 'contacto' => null
             ]);
     }
-
-
-
-
 }
 
 

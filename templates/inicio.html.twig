@@ -1,11 +1,61 @@
-<!doctype html>
-<html>
-<meta charset="utf-8">
-<body>
+{% extends 'base.html.twig' %}
+{% block tittle %}Contactos{% endblock %}
 
-	<h1>Contactos</h1>
-	<h2>Bienvenido a la web de contactos.</h2>
-	<p>Página de inicio</p>
+{% block body %}
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h1 class="display-5 fw-bold text-primary">📇 Contactos</h1>
+        <h2 class="text-secondary">Bienvenido a la web de contactos</h2>
+        <p class="text-muted">Página de inicio</p>
+    </div>
 
-</body>
-</html>
+    <h3 class="mb-3">Lista de contactos</h3>
+
+    {% if contactos is not empty %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover shadow-sm align-middle">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Teléfono</th>
+                        <th colspan="2" class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contacto in contactos %}
+                        <tr>
+                            <td>
+                                <a href="http://127.0.0.1:8000/contacto/{{ contacto.id }}">
+                                    {{ contacto.nombre }}
+                                </a>
+                            </td>
+                            <td>{{ contacto.email }}</td>
+                            <td>{{ contacto.telefono }}</td>
+                            <td class="text-center">
+                                <a href="http://127.0.0.1:8000/contacto/editar/{{ contacto.id }}" class="btn btn-sm btn-warning">
+                                    ✏️ Editar
+                                </a>
+                            </td>
+                            <td class="text-center">
+                                <a href="http://127.0.0.1:8000/contacto/delete/{{ contacto.id }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas borrar este contacto?')">
+                                    🗑️ Borrar
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+				<tfooter>
+				<tr>
+                        <th colspan="5" class="text-center"><a href="http://127.0.0.1:8000/contacto/nuevo">Añadir Contacto</th>
+                    </tr>
+				</tfooter>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center mt-4">
+            No hay usuarios
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
